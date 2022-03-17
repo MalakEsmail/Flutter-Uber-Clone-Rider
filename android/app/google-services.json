@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "433700840185",
+    "firebase_url": "https://flutterchatapp-9922c.firebaseio.com",
+    "project_id": "flutterchatapp-9922c",
+    "storage_bucket": "flutterchatapp-9922c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:433700840185:android:2d8ca09790569ab9b7f828",
+        "android_client_info": {
+          "package_name": "com.example.rider"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "433700840185-o3v7mlfcngoffjsr97l0umi3652qt23k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCO3AMTZu4N5xSyxpPBv9o6PBVyMvCehM8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "433700840185-o3v7mlfcngoffjsr97l0umi3652qt23k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
