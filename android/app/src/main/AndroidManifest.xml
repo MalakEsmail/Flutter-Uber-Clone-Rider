@@ -3,6 +3,11 @@
    <application
         android:label="rider"
         android:icon="@mipmap/ic_launcher">
+       <meta-data android:name="com.google.android.geo.API_KEY"
+       android:value="AIzaSyA-K1PmHSZR9wEXeHdrj1CAPemy-i3BBmI"/>
+       if (defaultTargetPlatform == TargetPlatform.android) {
+       AndroidGoogleMapsFlutter.useAndroidViewSurface = true;
+       }
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
