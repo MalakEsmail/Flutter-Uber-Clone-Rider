@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rider/widgets/brand_divider.dart';
 
@@ -22,6 +23,21 @@ class _MainPageState extends State<MainPage> {
     zoom: 14.4746,
   );
   double mapButtonPadding = 0;
+  // geoLocator
+  var geoLocator = Geolocator();
+  Position? currentPosition;
+  void setupPositionLocator() async {
+    if (await Geolocator.checkPermission() != LocationPermission.always) {
+      await Geolocator.requestPermission();
+    }
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.bestForNavigation);
+    currentPosition = position;
+    print("currentPosition : $currentPosition");
+    LatLng pos = LatLng(position.latitude, position.longitude);
+    CameraPosition cp = CameraPosition(target: pos, zoom: 14);
+    mapController!.animateCamera(CameraUpdate.newCameraPosition(cp));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +115,9 @@ class _MainPageState extends State<MainPage> {
               padding: EdgeInsets.only(bottom: mapButtonPadding),
               myLocationButtonEnabled: true,
               mapType: MapType.normal,
+              myLocationEnabled: true,
+              zoomGesturesEnabled: true,
+              zoomControlsEnabled: true,
               initialCameraPosition: _kGooglePlex,
               onMapCreated: (GoogleMapController controller) {
                 _controller.complete(controller);
@@ -106,6 +125,7 @@ class _MainPageState extends State<MainPage> {
                 setState(() {
                   mapButtonPadding = 270;
                 });
+                setupPositionLocator();
               },
             ),
             Positioned(
