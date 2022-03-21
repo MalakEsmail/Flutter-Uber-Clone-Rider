@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:rider/helpers/helpermethod.dart';
 import 'package:rider/widgets/brand_divider.dart';
 
 class MainPage extends StatefulWidget {
@@ -37,6 +38,9 @@ class _MainPageState extends State<MainPage> {
     LatLng pos = LatLng(position.latitude, position.longitude);
     CameraPosition cp = CameraPosition(target: pos, zoom: 14);
     mapController!.animateCamera(CameraUpdate.newCameraPosition(cp));
+    String address =
+        await HelperMethod.findCoordinateAddress(position: position);
+    print("Position Address: $address");
   }
 
   @override
