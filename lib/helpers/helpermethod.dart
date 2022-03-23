@@ -1,11 +1,14 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:provider/provider.dart';
+import 'package:rider/dataprovider/app_data.dart';
 import 'package:rider/global_variable.dart';
 import 'package:rider/helpers/requesthelper.dart';
+import 'package:rider/model/address.dart';
 
 class HelperMethod {
   /// function take position {long,lat} & return address string
-  static Future<String> findCoordinateAddress(
+  static Future<String> findCoordinateAddress(context,
       {required Position position}) async {
     String placeAddress = '';
     // check connectivity
@@ -20,6 +23,12 @@ class HelperMethod {
     var response = await RequestHelper.getRequest(url: url);
     if (response != "failed") {
       placeAddress = response['results'][0]['formatted_address'];
+      Address pickUpAddress = Address();
+      pickUpAddress.latitude = position.latitude;
+      pickUpAddress.longitude = position.longitude;
+      pickUpAddress.placeName = placeAddress;
+      Provider.of<AppData>(context, listen: false)
+          .updatePickUpAddress(pickUpAddress);
     }
     return placeAddress;
   }
