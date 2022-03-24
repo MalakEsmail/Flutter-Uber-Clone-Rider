@@ -321,4 +321,16 @@ class _MainPageState extends State<MainPage> {
       ),
     );
   }
+
+  Future<void> getDirection() async {
+    var pickUp = Provider.of<AppData>(context, listen: false).pickUpAddress!;
+    var destination =
+        Provider.of<AppData>(context, listen: false).destinationAddress!;
+
+    var pickLatLng = LatLng(pickUp.latitude!, pickUp.longitude!);
+    var destinationLatLng =
+        LatLng(destination.latitude!, destination.longitude!);
+    var thisDetails =
+        HelperMethod.getDirectionDetails(pickLatLng, destinationLatLng);
+  }
 }
