@@ -2,11 +2,14 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:rider/brand_colors.dart';
 import 'package:rider/dataprovider/app_data.dart';
 import 'package:rider/helpers/helpermethod.dart';
+import 'package:rider/model/direction_details.dart';
 import 'package:rider/screens/search_page.dart';
 import 'package:rider/widgets/brand_divider.dart';
 
@@ -30,6 +33,14 @@ class _MainPageState extends State<MainPage> {
   // geoLocator
   var geoLocator = Geolocator();
   Position? currentPosition;
+
+  // polyline between source to destination
+  List<LatLng> polyLineCoordinates = [];
+  Set<Polyline> polyLines = {};
+  // markers
+  Set<Marker> markers = {};
+  Set<Circle> circles = {};
+
   void setupPositionLocator() async {
     if (await Geolocator.checkPermission() != LocationPermission.always) {
       await Geolocator.requestPermission();
@@ -125,6 +136,9 @@ class _MainPageState extends State<MainPage> {
               myLocationEnabled: true,
               zoomGesturesEnabled: true,
               zoomControlsEnabled: true,
+              polylines: polyLines,
+              markers: markers,
+              circles: circles,
               initialCameraPosition: _kGooglePlex,
               onMapCreated: (GoogleMapController controller) {
                 _controller.complete(controller);
@@ -204,13 +218,14 @@ class _MainPageState extends State<MainPage> {
                         height: 20,
                       ),
                       GestureDetector(
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => SearchPage(),
                             ),
                           );
+                          await getDirection();
                         },
                         child: Container(
                           decoration: BoxDecoration(
@@ -330,7 +345,87 @@ class _MainPageState extends State<MainPage> {
     var pickLatLng = LatLng(pickUp.latitude!, pickUp.longitude!);
     var destinationLatLng =
         LatLng(destination.latitude!, destination.longitude!);
-    var thisDetails =
-        HelperMethod.getDirectionDetails(pickLatLng, destinationLatLng);
+    DirectionDetails thisDetails =
+        await HelperMethod.getDirectionDetails(pickLatLng, destinationLatLng);
+    // polyline
+    List<PointLatLng> results =
+        PolylinePoints().decodePolyline(thisDetails.encodedPoints!);
+    polyLineCoordinates.clear();
+    if (results.isNotEmpty) {
+      results.forEach((PointLatLng pointLatLng) {
+        polyLineCoordinates
+            .add(LatLng(pointLatLng.latitude, pointLatLng.longitude));
+      });
+    }
+    polyLines.clear();
+    setState(() {
+      Polyline polyline = Polyline(
+        polylineId: const PolylineId("polyId"),
+        color: Colors.blue,
+        points: polyLineCoordinates,
+        jointType: JointType.round,
+        width: 4,
+        startCap: Cap.roundCap,
+        endCap: Cap.roundCap,
+        geodesic: true,
+      );
+      polyLines.add(polyline);
+    });
+    // make polyline fit into map
+    LatLngBounds bounds;
+    if (pickLatLng.latitude > destinationLatLng.latitude &&
+        pickLatLng.longitude > destinationLatLng.longitude) {
+      bounds =
+          LatLngBounds(southwest: destinationLatLng, northeast: pickLatLng);
+    } else if (pickLatLng.longitude > destinationLatLng.longitude) {
+      bounds = LatLngBounds(
+          southwest: LatLng(pickLatLng.latitude, destinationLatLng.longitude),
+          northeast: LatLng(destinationLatLng.latitude, pickLatLng.longitude));
+    } else if (pickLatLng.latitude > destinationLatLng.latitude) {
+      bounds = LatLngBounds(
+          southwest: LatLng(pickLatLng.latitude, destinationLatLng.longitude),
+          northeast: LatLng(destinationLatLng.latitude, pickLatLng.longitude));
+    } else {
+      bounds =
+          LatLngBounds(southwest: pickLatLng, northeast: destinationLatLng);
+    }
+    mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 70));
+    Marker pickUpMarker = Marker(
+      markerId: MarkerId("markId1"),
+      position: pickLatLng,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+      infoWindow: InfoWindow(title: pickUp.placeName, snippet: "My Location"),
+    );
+    Marker destinationMarker = Marker(
+      markerId: MarkerId("markId2"),
+      position: destinationLatLng,
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+      infoWindow:
+          InfoWindow(title: destination.placeName, snippet: "Destination"),
+    );
+    setState(() {
+      markers.add(pickUpMarker);
+      markers.add(destinationMarker);
+    });
+    Circle circle1 = Circle(
+      circleId: CircleId("pickUp"),
+      strokeColor: Colors.green,
+      strokeWidth: 3,
+      radius: 12,
+      center: pickLatLng,
+      fillColor: BrandColors.colorGreen,
+    );
+    Circle circle2 = Circle(
+      circleId: CircleId("destination"),
+      strokeColor: Colors.purple,
+      strokeWidth: 3,
+      radius: 12,
+      center: destinationLatLng,
+      fillColor: BrandColors.colorAccentPurple,
+    );
+    setState(() {
+      circles.add(circle1);
+      circles.add(circle2);
+    });
   }
 }
