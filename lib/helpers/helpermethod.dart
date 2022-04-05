@@ -59,4 +59,13 @@ class HelperMethod {
         response["routes"][0]["overview_polyline"]["points"];
     return directionDetails;
   }
+
+  static int estimateFares(DirectionDetails details) {
+    double baseFare = 3;
+    double distanceFare = (details.distanceValue! / 100) * 0.3;
+    double timeFare = (details.durationValue! / 60) * 0.2;
+
+    double totalFare = baseFare + distanceFare + timeFare;
+    return timeFare.truncate();
+  }
 }
